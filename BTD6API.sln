@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RichPresence", "Examples\Ri
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HypersonicTowers", "Examples\HypersonicTowers\HypersonicTowers.vcxproj", "{DC5A6014-2EFA-4C35-8960-2106D187C315}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpeedyBloons", "Examples\SpeedyBloons\SpeedyBloons.vcxproj", "{52AD30E9-406E-4E73-A9B7-D5C7FF816754}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,16 @@ Global
 		{DC5A6014-2EFA-4C35-8960-2106D187C315}.Release|x64.Build.0 = Release|x64
 		{DC5A6014-2EFA-4C35-8960-2106D187C315}.Release|x86.ActiveCfg = Release|Win32
 		{DC5A6014-2EFA-4C35-8960-2106D187C315}.Release|x86.Build.0 = Release|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Debug|x64.ActiveCfg = Debug|x64
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Debug|x64.Build.0 = Debug|x64
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Debug|x86.ActiveCfg = Debug|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Debug|x86.Build.0 = Debug|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Release|Any CPU.ActiveCfg = Release|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Release|x64.ActiveCfg = Release|x64
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Release|x64.Build.0 = Release|x64
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Release|x86.ActiveCfg = Release|Win32
+		{52AD30E9-406E-4E73-A9B7-D5C7FF816754}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

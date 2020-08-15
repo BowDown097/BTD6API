@@ -9,13 +9,13 @@
 // Write some text to the log file
 void LogWrite(std::string text)
 {
-    HANDLE hfile = CreateFileW(LOG_FILE, FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hfile = CreateFileW(LOG_FILE, FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    if (hfile == INVALID_HANDLE_VALUE)
-        MessageBox(0, L"Could not open log file", 0, 0);
+	if (hfile == INVALID_HANDLE_VALUE)
+		MessageBox(0, L"Could not open log file", 0, 0);
 
-    DWORD written;
-    WriteFile(hfile, text.c_str(), (DWORD) text.length(), &written, NULL);
-    WriteFile(hfile, "\r\n", 2, &written, NULL);
-    CloseHandle(hfile);
+	DWORD written;
+	WriteFile(hfile, text.c_str(), (DWORD)text.length(), &written, NULL);
+	WriteFile(hfile, "\r\n", 2, &written, NULL);
+	CloseHandle(hfile);
 }

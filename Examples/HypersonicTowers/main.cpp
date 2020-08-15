@@ -1,7 +1,7 @@
 // Generated C++ file by Il2CppInspector - http://www.djkaty.com - https://github.com/djkaty
 // Custom injected code entry point
 
-#include "../../il2cpp/il2cpp-init.h"
+#include "../../il2cpp/il2cpp-utils.hpp"
 #include "helpers.h"
 #include <iostream>
 
@@ -21,15 +21,7 @@ void Run()
     size_t size = 0;
     const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-    const Il2CppAssembly* assembly = nullptr;
-    for (auto i = 0; i < size; ++i)
-    {
-        if (std::string(assemblies[i]->aname.name) == "Assembly-CSharp")
-        {
-            std::cout << "Found assembly!" << std::endl;
-            assembly = assemblies[i];
-        }
-    }
+    const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
 
     if (assembly == nullptr)
     {
@@ -37,21 +29,21 @@ void Run()
         return;
     }
 
-    Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
-    FieldInfo* instance = il2cpp_class_get_field_from_name(gameClass, "instance");
-    Game* gameInstAddr = 0;
-    il2cpp_field_static_get_value(instance, &gameInstAddr);
+	Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
+	FieldInfo* instance = il2cpp_class_get_field_from_name(gameClass, "instance");
+	Game* gameInstAddr = 0;
+	il2cpp_field_static_get_value(instance, &gameInstAddr);
 
-    if (gameInstAddr == NULL)
-    {
-        std::cout << "Some error occurred when trying to access the game model." << std::endl;
-        return;
-    }
+	if (gameInstAddr == NULL)
+	{
+		std::cout << "Some error occurred when trying to access the game model." << std::endl;
+		return;
+	}
 
-    Game* gameInstance = (Game*)(gameInstAddr);
+	Game* gameInstance = (Game*)(gameInstAddr);
 
-    auto towerModelsArr = gameInstance->fields.model->fields.towers;
-    TowerModel** towerModels = towerModelsArr->vector;
+	auto towerModelsArr = gameInstance->fields.model->fields.towers;
+	TowerModel** towerModels = towerModelsArr->vector;
 
     for (int i = 0; i < towerModelsArr->max_length; ++i)
     {

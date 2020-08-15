@@ -1,7 +1,7 @@
 // Generated C++ file by Il2CppInspector - http://www.djkaty.com - https://github.com/djkaty
 // Custom injected code entry point
 
-#include "../../il2cpp/il2cpp-init.h"
+#include "../../il2cpp/il2cpp-utils.hpp"
 #include "helpers.h"
 #include <iostream>
 
@@ -21,15 +21,7 @@ void Run()
     size_t size = 0;
     const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-    const Il2CppAssembly* assembly = nullptr;
-    for (auto i = 0; i < size; ++i)
-    {
-        if (std::string(assemblies[i]->aname.name) == "Assembly-CSharp")
-        {
-            std::cout << "Found assembly!" << std::endl;
-            assembly = assemblies[i];
-        }
-    }
+    const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
 
     if (assembly == nullptr)
     {
@@ -50,7 +42,7 @@ void Run()
 
     Game* gameInstance = (Game*)(gameInstAddr);
 
-    auto bloonModelArr = gameInstance->fields.model->fields.bloons;
+    BloonModel__Array* bloonModelArr = gameInstance->fields.model->fields.bloons;
     BloonModel** bloonModels = bloonModelArr->vector;
 
     for (int i = 0; i < bloonModelArr->max_length; ++i)
@@ -60,7 +52,7 @@ void Run()
             float speed = 1 * (rand() % 100);
 
             if (bloonModels[i]->fields.display != NULL) {
-                std::wstring display((wchar_t*)(&bloonModels[i]->fields.display->fields.m_firstChar));
+                std::wstring display = BTD6API::StringUtils::toWideString(bloonModels[i]->fields.display);
                 std::wcout << L"Bloon: " << display << L", Speed was: " << L"/" << bloonModels[i]->fields.speed << ", Speed now is: " << speed << '\n';
             }
 

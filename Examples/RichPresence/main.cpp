@@ -1,12 +1,10 @@
 // Generated C++ file by Il2CppInspector - http://www.djkaty.com - https://github.com/djkaty
 // Custom injected code entry point
 
-#include "../../il2cpp/il2cpp-init.h"
+#include "../../il2cpp/il2cpp-utils.hpp"
 #include "helpers.h"
 #include <iostream>
 #include <discord_rpc.h>
-#include <codecvt>
-#include <locale>
 #include <regex>
 
 using namespace app;
@@ -73,15 +71,7 @@ void Run()
 	size_t size = 0;
 	const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-	const Il2CppAssembly* assembly = nullptr;
-	for (auto i = 0; i < size; ++i)
-	{
-		if (std::string(assemblies[i]->aname.name) == "Assembly-CSharp")
-		{
-			std::cout << "Found assembly!" << std::endl;
-			assembly = assemblies[i];
-		}
-	}
+	const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
 
 	if (assembly == nullptr)
 	{
@@ -101,13 +91,10 @@ void Run()
 			InGame* inGame = (InGame*)(inGameInstAddr);
 			Helpers_InGameData inGameData = inGame->fields.inGameData;
 			// set up parameters for presence
-			using convert_type = std::codecvt_utf8<wchar_t>;
-			std::wstring_convert<convert_type, wchar_t> converter;
-
 			int32_t selectedCoopPlayerCount = inGameData.selectedCoopPlayerCount;
-			std::string selectedDifficulty = converter.to_bytes(std::wstring((wchar_t*)(&inGameData.selectedDifficulty->fields.m_firstChar)));
-			std::string selectedMap = converter.to_bytes(std::wstring((wchar_t*)(&inGameData.selectedMap->fields.m_firstChar)));
-			std::string selectedMode = converter.to_bytes(std::wstring((wchar_t*)(&inGameData.selectedMode->fields.m_firstChar)));
+			std::string selectedDifficulty = BTD6API::StringUtils::toString(inGameData.selectedDifficulty);
+			std::string selectedMap = BTD6API::StringUtils::toString(inGameData.selectedMap);
+			std::string selectedMode = BTD6API::StringUtils::toString(inGameData.selectedMode);
 			// make presence
 			updatePresence(selectedCoopPlayerCount, selectedDifficulty, selectedMap, selectedMode);
 		}

@@ -80,7 +80,7 @@ namespace BTD6APIInjector
                 RenderTransformOrigin = new Point(0.5, 0.25),
                 modDir = dll
             };
-            modCheckBox.Click += new RoutedEventHandler(ToggleMod);
+            modCheckBox.Click += ToggleMod;
             DockPanel.SetDock(modCheckBox, Dock.Left);
             dockPanel.Children.Add(modCheckBox);
 

@@ -61,7 +61,7 @@ void Run()
                     {
                         std::wstring name((wchar_t*)(&model->fields.name->fields.m_firstChar));
 
-                        if (name.find(L"AttackModel") != std::wstring::npos)
+                        if ((name.find(L"AttackModel") != std::wstring::npos)||((name.find(L"AttackAirUnitModel") != std::wstring::npos)))
                         {
                             AttackModel* attackModel = (AttackModel*)(model);
 
@@ -74,7 +74,7 @@ void Run()
 
                                 if (weaponModel != NULL)
                                 {
-                                    weaponModel->fields.rate = 0.01f;
+                                    weaponModel->fields.rate = 0.0f;
                                     weaponModel->fields.rateFrames = 0;
                                 }
                             }

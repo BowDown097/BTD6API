@@ -31,11 +31,21 @@ namespace BTD6APIInjector
                 {
                     Directory.CreateDirectory(btd6Path + "\\mods");
                 }
-                new Thread(BTD6Running)
+
+                if (Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0\VC\Runtimes") != null ||
+                    Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\DevDiv\vc\Servicing\14.0\RuntimeAdditional") != null) // basically checks for x64 vc redist
                 {
-                    IsBackground = true
-                }.Start();
-                InitializeComponent();
+                    new Thread(BTD6Running)
+                    {
+                        IsBackground = true
+                    }.Start();
+                    InitializeComponent();
+                }
+                else
+                {
+                    MessageBox.Show("You do not have the x64 Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019 installed. Clicking OK will bring you to the direct download link. Mods will not work without it.", "Error!");
+                    Process.Start("https://aka.ms/vs/16/release/vc_redist.x64.exe");
+                }
             }
             else
             {
@@ -47,22 +57,19 @@ namespace BTD6APIInjector
         {
             while (true)
             {
-                if (Process.GetProcessesByName("BloonsTD6").Length > 0)
+                Dispatcher.Invoke(() =>
                 {
-                    Dispatcher.Invoke(() =>
+                    if (Process.GetProcessesByName("BloonsTD6").Length > 0)
                     {
                         runningStatus.Content = "BTD6 is running";
                         runningStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0));
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(() =>
+                    }
+                    else
                     {
                         runningStatus.Content = "BTD6 is not running";
                         runningStatus.Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0));
-                    });
-                }
+                    }
+                });
                 Thread.Sleep(2000);
             }
         }

@@ -10,6 +10,51 @@ using namespace app;
 // Set the name of your log file here
 extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
+void makeHypersonic(TowerModel__Array* towersArr, const std::string& where)
+{
+    TowerModel** towers = towersArr->vector;
+
+    for (int i = 0; i < towersArr->max_length; ++i)
+    {
+        if (towers[i]->fields.display != NULL)
+        {
+            Model__Array* modelsArr = towers[i]->fields.behaviors;
+            Model** models = modelsArr->vector;
+            if (models != NULL)
+            {
+                for (int j = 0; j < modelsArr->max_length; ++j)
+                {
+                    Model* model = models[j];
+                    if (model != NULL && model->fields.name != NULL)
+                    {
+                        std::wstring name = BTD6API::StringUtils::toWideString(model->fields.name);
+                        if (name.find(L"AttackModel") != std::wstring::npos || name.find(L"AttackAirUnitModel") != std::wstring::npos)
+                        {
+                            AttackModel* attack = (AttackModel*)model;
+
+                            WeaponModel__Array* weaponsArr = attack->fields.weapons;
+                            WeaponModel** weapons = weaponsArr->vector;
+                            
+                            for (int k = 0; k < weaponsArr->max_length; ++k)
+                            {
+                                WeaponModel* weapon = weapons[k];
+
+                                if (weapon != NULL)
+                                {
+                                    weapon->fields.rate = 0.0f;
+                                    weapon->fields.rateFrames = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Made towers hypersonic (" << where << ")" << std::endl;
+}
+
 // Injected code entry point
 void Run()
 {
@@ -21,7 +66,7 @@ void Run()
     size_t size = 0;
     const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-    const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
+    const Il2CppAssembly* assembly = BTD6API::Assembly::get(assemblies, "Assembly-CSharp", size);
 
     if (assembly == nullptr)
     {
@@ -29,10 +74,22 @@ void Run()
         return;
     }
 
+    // do in-game patches (will need to patch InGame if user is currently in-game, just patching Game will do nothing in that case)
+    Il2CppClass* inGameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity.UI_New.InGame", "InGame");
+    FieldInfo* inGameInstanceInfo = il2cpp_class_get_field_from_name(inGameClass, "instance");
+    InGame* inGameInstAddr = 0;
+    il2cpp_field_static_get_value(inGameInstanceInfo, &inGameInstAddr);
+
+    if (inGameInstAddr != NULL)
+    {
+        InGame* inGameInstance = (InGame*)inGameInstAddr;
+        makeHypersonic(inGameInstance->fields.bridge->fields.simulation->fields.model->fields.towers, "in-game");
+    }
+    // game patches
 	Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
-	FieldInfo* instance = il2cpp_class_get_field_from_name(gameClass, "instance");
+	FieldInfo* gameInstanceInfo = il2cpp_class_get_field_from_name(gameClass, "instance");
 	Game* gameInstAddr = 0;
-	il2cpp_field_static_get_value(instance, &gameInstAddr);
+	il2cpp_field_static_get_value(gameInstanceInfo, &gameInstAddr);
 
 	if (gameInstAddr == NULL)
 	{
@@ -40,48 +97,6 @@ void Run()
 		return;
 	}
 
-	Game* gameInstance = (Game*)(gameInstAddr);
-
-	auto towerModelsArr = gameInstance->fields.model->fields.towers;
-	TowerModel** towerModels = towerModelsArr->vector;
-
-    for (int i = 0; i < towerModelsArr->max_length; ++i)
-    {
-        if (towerModels[i]->fields.display != NULL)
-        {
-            auto modelsArr = towerModels[i]->fields.behaviors;
-            Model** models = modelsArr->vector;
-            if (models != NULL)
-            {
-                for (int j = 0; j < modelsArr->max_length; ++j)
-                {
-                    Model* model = models[j];
-
-                    if (model != NULL && model->fields.name != NULL)
-                    {
-                        std::wstring name((wchar_t*)(&model->fields.name->fields.m_firstChar));
-
-                        if ((name.find(L"AttackModel") != std::wstring::npos)||((name.find(L"AttackAirUnitModel") != std::wstring::npos)))
-                        {
-                            AttackModel* attackModel = (AttackModel*)(model);
-
-                            auto weaponModelsArr = attackModel->fields.weapons;
-                            WeaponModel** weaponModels = weaponModelsArr->vector;
-
-                            for (int k = 0; k < weaponModelsArr->max_length; ++k)
-                            {
-                                WeaponModel* weaponModel = weaponModels[k];
-
-                                if (weaponModel != NULL)
-                                {
-                                    weaponModel->fields.rate = 0.0f;
-                                    weaponModel->fields.rateFrames = 0;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+	Game* gameInstance = (Game*)gameInstAddr;
+    makeHypersonic(gameInstance->fields.model->fields.towers, "game");
 }

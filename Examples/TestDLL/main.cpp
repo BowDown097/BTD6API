@@ -3,6 +3,7 @@
 
 #include "../../il2cpp/il2cpp-utils.hpp"
 #include "helpers.h"
+#include <fstream>
 #include <iostream>
 
 using namespace app;
@@ -21,8 +22,7 @@ void Run()
 	size_t size = 0;
 	const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-	const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
-
+	const Il2CppAssembly* assembly = BTD6API::Assembly::get(assemblies, "Assembly-CSharp", size);
 	if (assembly == nullptr)
 	{
 		std::cout << "Error: Assembly-CSharp not found." << std::endl;
@@ -42,121 +42,103 @@ void Run()
 
 	Game* gameInstance = (Game*)(gameInstAddr);
 
-	auto towerModelsArr = gameInstance->fields.model->fields.towers;
-	auto upgradeModelsArr = gameInstance->fields.model->fields.upgrades;
+	TowerModel__Array* towerModelsArr = gameInstance->fields.model->fields.towers;
 	TowerModel** towerModels = towerModelsArr->vector;
-	UpgradeModel** upgradeModels = upgradeModelsArr->vector;
 
-	AttackModel* towerAttack = 0;
 	for (int i = 0; i < towerModelsArr->max_length; ++i)
 	{
 		if (towerModels[i]->fields.display != NULL)
 		{
-			if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.baseId) == L"Wizard-LordPhoenix")
+			if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.behaviors->vector[0]->fields.name).find(L"BoomerangMonkey-500") != std::wstring::npos)
 			{
 				Model__Array* modelsArr = towerModels[i]->fields.behaviors;
-				AttackModel* attackModel = (AttackModel*)(BTD6API::ModelUtils::locateModel(modelsArr, L"AttackModel"));
-				if (attackModel != NULL)
+				Model** models = modelsArr->vector;
+				if (models != NULL)
 				{
-					attackModel->fields.attackThroughWalls = false;
-					for (int j = 0; j < attackModel->fields.weapons->max_length; ++j)
+					for (int j = 0; j < modelsArr->max_length; ++j)
 					{
-						attackModel->fields.weapons->vector[j]->fields.rate = 10;
-						attackModel->fields.weapons->vector[j]->fields.projectile->fields.pierce = 1;
+						if (models[j] != NULL && models[j]->fields.name != NULL)
+						{
+							if (BTD6API::StringUtils::toWideString(models[j]->fields.name).find(L"OrbitModel") != std::wstring::npos)
+							{
+								OrbitModel* orbit = (OrbitModel*)models[j];
+								if (orbit != NULL)
+								{
+									Model__Array* orbitModelsArr = orbit->fields.projectile->fields.behaviors;
+									Model** orbitModels = orbitModelsArr->vector;
+									if (orbitModels != NULL)
+									{
+										for (int k = 0; k < orbitModelsArr->max_length; ++k)
+										{
+											if (orbitModels[k] != NULL && orbitModels[k]->fields.name != NULL)
+											{
+												std::cout << BTD6API::StringUtils::toString(orbitModels[k]->fields.name) << std::endl;
+												if (BTD6API::StringUtils::toWideString(orbitModels[k]->fields.name).find(L"RotateModel") != std::wstring::npos)
+												{
+													RotateModel* rotate = (RotateModel*)orbitModels[k];
+													if (rotate != NULL)
+													{
+														rotate->fields.angle = -150.0f;
+														rotate->fields.rotationFrames = 0.0f;
+														std::cout << "Patched! Rotate angle is " << std::to_string(rotate->fields.angle) << std::endl;
+														std::cout << "Patched! Rotation frames are " << std::to_string(rotate->fields.rotationFrames) << "\n\n";
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+							/*
+							else if (BTD6API::StringUtils::toWideString(models[j]->fields.name) == L"AttackModel_OrbitAttack_")
+							{
+								AttackModel* attack = (AttackModel*)models[j];
+								if (attack != NULL)
+								{
+									WeaponModel__Array* weaponsArr = attack->fields.weapons;
+									WeaponModel** weapons = weaponsArr->vector;
+									if (weapons != NULL)
+									{
+										for (int k = 0; k < weaponsArr->max_length; ++k)
+										{
+											if (weapons[k] != NULL)
+											{
+												weapons[k]->fields.rate = 0.0f;
+												weapons[k]->fields.rateFrames = 0;
+												std::cout << "Patched! Rate is 0" << std::endl;
+											}
+										}
+									}
+								}
+							}
+							*/
+						}
 					}
-					towerAttack = attackModel;
 				}
-				break;
 			}
 		}
 	}
+	/*
+	Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
+	FieldInfo* instance = il2cpp_class_get_field_from_name(gameClass, "instance");
+	Game* gameInstAddr = 0;
+	il2cpp_field_static_get_value(instance, &gameInstAddr);
 
-	for (int i = 0; i < towerModelsArr->max_length; ++i)
+	if (gameInstAddr == NULL)
 	{
-		if (towerModels[i]->fields.display != NULL)
-		{
-			if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.portrait).find(L"000-DartMonkey") != std::wstring::npos)
-			{
-				towerModels[i]->fields.cost = 1700;
-
-				BTD6API::TowerUtils::patchTowerAttack(towerModels[i], towerAttack);
-				std::cout << "Found and patched 000 Dart TowerModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.behaviors->vector[0]->fields.name).find(L"DartMonkey-100") != std::wstring::npos)
-			{
-				for (int j = 0; j < towerAttack->fields.weapons->max_length; ++j)
-				{
-					towerAttack->fields.weapons->vector[j]->fields.projectile->fields.pierce = 2;
-				}
-
-				BTD6API::TowerUtils::patchTowerAttack(towerModels[i], towerAttack);
-				std::cout << "Found and patched 100 Dart TowerModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.behaviors->vector[0]->fields.name).find(L"DartMonkey-200") != std::wstring::npos)
-			{
-				for (int j = 0; j < towerAttack->fields.weapons->max_length; ++j)
-				{
-					towerAttack->fields.weapons->vector[j]->fields.rate = 6;
-				}
-
-				BTD6API::TowerUtils::patchTowerAttack(towerModels[i], towerAttack);
-				std::cout << "Found and patched 200 Dart TowerModel" << std::endl;
-			}
-			// TODO: 300 add lightning and fire tornadoes
-			// TODO: 400 add fire ring
-			else if (BTD6API::StringUtils::toWideString(towerModels[i]->fields.behaviors->vector[0]->fields.name).find(L"DartMonkey-500") != std::wstring::npos)
-			{
-				for (int j = 0; j < towerAttack->fields.weapons->max_length; ++j)
-				{
-					towerAttack->fields.weapons->vector[j]->fields.rate = 0.01f;
-				}
-
-				BTD6API::TowerUtils::patchTowerAttack(towerModels[i], towerAttack);
-				std::cout << "Found and patched 500 Dart TowerModel" << std::endl;
-			}
-		}
+		std::cout << "Some error occurred when trying to access the game model." << std::endl;
+		return;
 	}
 
-	for (int i = 0; i < upgradeModelsArr->max_length; ++i)
+	Game* gameInstance = (Game*)(gameInstAddr);
+
+	const MethodInfo* _method = il2cpp_class_get_method_from_name(gameClass, "GetVersionString", 0);
+	if (_method == nullptr)
 	{
-		if (upgradeModels[i]->fields.icon != NULL)
-		{
-			if (BTD6API::StringUtils::toWideString(upgradeModels[i]->fields.icon).find(L"/SharpShots") != std::wstring::npos)
-			{
-				upgradeModels[i]->fields.cost = 1100;
-				upgradeModels[i]->fields.localizedNameOverride = (String*)il2cpp_string_new("Hotter Fire");
-
-				std::cout << "Found and patched 100 Dart UpgradeModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(upgradeModels[i]->fields.icon).find(L"/RazorSharpShots") != std::wstring::npos)
-			{
-				upgradeModels[i]->fields.cost = 1700;
-				upgradeModels[i]->fields.localizedNameOverride = (String*)il2cpp_string_new("Rapid Production");
-
-				std::cout << "Found and patched 200 Dart UpgradeModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(upgradeModels[i]->fields.icon).find(L"/Spike-o-pult") != std::wstring::npos)
-			{
-				upgradeModels[i]->fields.cost = 8400;
-				upgradeModels[i]->fields.localizedNameOverride = (String*)il2cpp_string_new("Raging Thunder");
-
-				std::cout << "Found and patched 300 Dart UpgradeModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(upgradeModels[i]->fields.icon).find(L"/Juggernaut") != std::wstring::npos)
-			{
-				upgradeModels[i]->fields.cost = 70000;
-				upgradeModels[i]->fields.localizedNameOverride = (String*)il2cpp_string_new("Hellstorm");
-
-				std::cout << "Found and patched 400 Dart UpgradeModel" << std::endl;
-			}
-			else if (BTD6API::StringUtils::toWideString(upgradeModels[i]->fields.icon).find(L"/UltraJuggernaut") != std::wstring::npos)
-			{
-				upgradeModels[i]->fields.cost = 999999;
-				upgradeModels[i]->fields.localizedNameOverride = (String*)il2cpp_string_new("HYPERSONIC!!!!!");
-				upgradeModels[i]->fields.confirmation = (String*)il2cpp_string_new("This will probably crash your game. Good luck.");
-
-				std::cout << "Found and patched 500 Dart UpgradeModel" << std::endl;
-			}
-		}
+		std::cout << "Error: Game::GetVersionString not found." << std::endl;
+		return;
 	}
+
+	std::cout << BTD6API::StringUtils::toString(BTD6API::Assembly::callFunction<String*>(_method, gameInstance, (MethodInfo*)_method));
+	*/
 }

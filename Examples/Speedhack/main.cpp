@@ -21,7 +21,7 @@ void Run()
     size_t size = 0;
     const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-    const Il2CppAssembly* assembly = BTD6API::Assembly::init(assemblies, size);
+    const Il2CppAssembly* assembly = BTD6API::Assembly::get(assemblies, "Assembly-CSharp", size);
 
     if (assembly == nullptr)
     {

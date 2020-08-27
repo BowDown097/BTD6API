@@ -7,18 +7,30 @@ namespace BTD6API
 	class Assembly
 	{
 	public:
-		static const Il2CppAssembly* init(const Il2CppAssembly** assemblies, size_t size)
+		static const Il2CppAssembly* get(const Il2CppAssembly** assemblies, const std::string& assemblyName, size_t size)
 		{
 			const Il2CppAssembly* assembly = nullptr;
 			for (auto i = 0; i < size; ++i)
 			{
-				if (std::string(assemblies[i]->aname.name) == "Assembly-CSharp")
+				if (std::string(assemblies[i]->aname.name) == assemblyName)
 				{
 					assembly = assemblies[i];
 				}
 			}
 
 			return assembly;
+		}
+		
+		// from https://stackoverflow.com/a/46011055
+		template <typename R, typename... Args>
+		static R callFunction(const MethodInfo* method, Args... args)
+		{
+			if (method != nullptr)
+			{
+				typedef R(*Function)(Args...);
+				Function fn = (Function)((void*)method->methodPointer);
+				return fn(args...);
+			}
 		}
 	};
 

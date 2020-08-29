@@ -5,7 +5,6 @@
 #include <fstream>
 
 using namespace app;
-
 // Injected code entry point
 void Run()
 {
@@ -26,24 +25,30 @@ void Run()
 	}
 
 	Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
-	FieldInfo* instance = il2cpp_class_get_field_from_name(gameClass, "instance");
-	Game* gameInstAddr = 0;
-	il2cpp_field_static_get_value(instance, &gameInstAddr);
+	FieldInfo* towers = il2cpp_class_get_field_from_name(gameClass, "towers");
+	String__Array* towersArry = NULL;
+	il2cpp_field_static_get_value(towers, &towersArry);
+	String** towersCArry = towersArry->vector;
 
-	if (gameInstAddr == NULL)
+	if (towersArry == NULL)
 	{
 		std::cout << "Some error occurred when trying to access the game model." << std::endl;
 		return;
 	}
 
-	Game* gameInstance = (Game*)gameInstAddr;
-
-	Version* version = gameInstance->fields.version;
-	if (version == NULL)
-	{
-		std::cout << "Could not get version info." << std::endl;
-		return;
+	for (auto i = 0; i < towersArry->max_length; ++i) {
+		std::wcout << BTD6API::StringUtils::toWideString(towersArry->vector[i]) << std::endl;
 	}
 
-	std::cout << "Major: " << std::to_string(version->fields._Major) << " Minor: " << std::to_string(version->fields._Minor) << " Build: " << std::to_string(version->fields._Build) << " Revision: " << std::to_string(version->fields._Revision) << std::endl;
+	std::cout << "\n\n" << std::endl;
+
+	BTD6API::Array::resize(towersArry, towersArry->max_length + 1);
+
+
+	for (auto i = 0; i < towersArry->max_length; ++i) {
+		std::wcout << BTD6API::StringUtils::toWideString(towersArry->vector[i]) << std::endl;
+	}
+
+	std::wcout << L"Done!" << std::endl;
+
 }

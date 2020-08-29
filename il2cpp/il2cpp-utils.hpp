@@ -1,6 +1,7 @@
 #include "il2cpp-init.h"
 #include <string>
 #include <codecvt>
+#include <iostream>
 
 namespace BTD6API
 {
@@ -62,8 +63,10 @@ namespace BTD6API
 		static std::wstring toWideString(app::String* str)
 		{
 			std::wstring wString;
-			if (str != NULL)
-			{
+			if (str == NULL) {
+				wString = L"NULL";
+			}
+			else {
 				wString = std::wstring((wchar_t*)(&str->fields.m_firstChar));
 			}
 			return wString;
@@ -73,6 +76,26 @@ namespace BTD6API
 		{
 			std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 			return converter.to_bytes(toWideString(str));
+		}
+	};
+	struct Array {
+		template<typename T>
+		static void resize(T& src, size_t newsize) {
+			
+			// Allocate new array
+			Il2CppArray* dst = il2cpp_array_new((Il2CppClass*)(src->vector[0]->klass), newsize);
+
+			size_t dst_sz = sizeof(dst->vector[0]) * dst->max_length;
+			size_t src_sz = sizeof(src->vector[0]) * src->max_length;
+
+			// Copy the contents of the array
+			memcpy_s(dst->vector, dst_sz, src->vector, src_sz);
+
+			//FIXME: This function may memory leak, not sure how GC works.
+			//il2cpp_free(src->vector);
+
+			// Change the pointer
+			src = (T)dst;
 		}
 	};
 

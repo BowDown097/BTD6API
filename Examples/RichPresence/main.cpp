@@ -1,16 +1,11 @@
 // Generated C++ file by Il2CppInspector - http://www.djkaty.com - https://github.com/djkaty
 // Custom injected code entry point
 
-#include "../../il2cpp/il2cpp-utils.hpp"
-#include "helpers.h"
-#include <iostream>
+#include "pch.hpp"
 #include <discord_rpc.h>
 #include <regex>
 
 using namespace app;
-
-// Set the name of your log file here
-extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
 static void updatePresence(int32_t selectedCoopPlayerCount, std::string selectedDifficulty, std::string selectedMap, std::string selectedMode)
 {

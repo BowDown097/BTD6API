@@ -1,14 +1,10 @@
 // Generated C++ file by Il2CppInspector - http://www.djkaty.com - https://github.com/djkaty
 // Custom injected code entry point
 
-#include "../../il2cpp/il2cpp-utils.hpp"
-#include "helpers.h"
-#include <iostream>
+#include "pch.hpp"
 
 using namespace app;
 
-// Set the name of your log file here
-extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
 void makeHypersonic(TowerModel__Array* towersArr, const std::string& where)
 {

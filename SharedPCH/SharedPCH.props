@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <SharedPCHDir>$(SolutionDir)Outputs\Intermediate\$(Platform)\$(Configuration)\</SharedPCHDir>
+    <SharedPCH>$(SharedPchDir)Shared.pch</SharedPCH>
+    <SharedPdb>$(SharedPchDir)vc$(PlatformToolsetVersion).pdb</SharedPdb>
+    <SharedIdb>$(SharedPchDir)vc$(PlatformToolsetVersion).idb</SharedIdb>
+    <ProjDirOut>$(SolutionDir)Outputs\$(ProjectName)\$(Platform)\$(Configuration)\</ProjDirOut>
+    <ProjDirIntOut>$(SolutionDir)Outputs\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</ProjDirIntOut>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(ProjDirOut)</OutDir>
+    <IntDir>$(ProjDirIntOut)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)SharedPCH;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(SharedPCH)</PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <CustomBuildStep>
+      <Command>if EXIST "$(SharedPDB)" xcopy /Y /F "$(SharedPDB)" "$(IntDIr)"
+if EXIST "$(SharedIDB)" xcopy /Y /F "$(SharedIDB)" "$(IntDIr)"</Command>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="SharedPCHDir">
+      <Value>$(SharedPCHDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SharedPCH">
+      <Value>$(SharedPCH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SharedPdb">
+      <Value>$(SharedPdb)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SharedIdb">
+      <Value>$(SharedIdb)</Value>
+    </BuildMacro>
+    <BuildMacro Include="ProjDirOut">
+      <Value>$(ProjDirOut)</Value>
+    </BuildMacro>
+    <BuildMacro Include="ProjDirIntOut">
+      <Value>$(ProjDirIntOut)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

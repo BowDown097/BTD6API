@@ -19,9 +19,7 @@
 * BAD -> Fortified BAD
 */
 
-#include "../../il2cpp/il2cpp-utils.hpp"
-#include "helpers.h"
-#include <iostream>
+#include "pch.hpp"
 #include <map>
 #include <random>
 

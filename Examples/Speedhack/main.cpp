@@ -8,23 +8,31 @@ using namespace app;
 // Injected code entry point
 void Run()
 {
-    AllocConsole();
-    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	freopen_s((FILE**)stdin, "CONIN$", "r", stdin);
 
-    std::cout << "Initializing..." << std::endl;
+	std::cout << "Initializing..." << std::endl;
 
-    size_t size = 0;
-    const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
+	size_t size = 0;
+	const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
 
-    const Il2CppAssembly* assembly = BTD6API::Assembly::get(assemblies, "Assembly-CSharp", size);
+	const Il2CppAssembly* assembly = BTD6API::Assembly::get(assemblies, "Assembly-CSharp", size);
 
-    if (assembly == nullptr)
-    {
-        std::cout << "Error: Assembly-CSharp not found." << std::endl;
-        return;
-    }
-	
+	if (assembly == nullptr)
+	{
+		std::cout << "Error: Assembly-CSharp not found." << std::endl;
+		return;
+	}
+
 	int speed = 10;
+	std::cout << "What speed do you want? (Default: 10): ";
+	try
+	{
+		std::cin >> speed;
+	}
+	catch (std::exception) {}
+
 	float speedF = static_cast<float>(speed);
 
 	while (true)
@@ -41,7 +49,7 @@ void Run()
 				il2cpp_field_static_set_value(fastForwardInfo, &speed);
 				il2cpp_field_static_set_value(maxStepsInfo, &speedF);
 				std::cout << "Game speed set from 3 -> " << std::to_string(speed) << std::endl;
-			} // if compromisedFastFowardRate is not 10, that means it is likely unchanged, so patch
+			} // if compromisedFastFowardRate is not speed, that means it is likely unchanged, so patch
 		}
 		else
 		{

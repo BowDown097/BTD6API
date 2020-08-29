@@ -33,6 +33,28 @@ namespace BTD6API
 			}
 		}
 	};
+	
+	class KonFuze
+	{
+	public:
+		static double get_Value(Il2CppClass* konfuzeClass, app::KonFuze* konfuzeObj)
+		{
+			const MethodInfo* _method = il2cpp_class_get_method_from_name(konfuzeClass, "get_Value", 0);
+			if (_method != nullptr)
+			{
+				return Assembly::callFunction<double>(_method, konfuzeObj, (MethodInfo*)_method);
+			}
+		}
+		
+		static void set_Value(Il2CppClass* konfuzeClass, app::KonFuze* konfuzeObj, double val)
+		{
+			const MethodInfo* _method = il2cpp_class_get_method_from_name(konfuzeClass, "Write", 1);
+			if (_method != nullptr)
+			{
+				Assembly::callFunction<void>(_method, konfuzeObj, val, (MethodInfo*)_method);
+			}
+		}
+	};
 
 	class StringUtils
 	{

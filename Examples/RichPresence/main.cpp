@@ -7,9 +7,9 @@
 
 using namespace app;
 
-static void updatePresence(int32_t selectedCoopPlayerCount, std::string selectedDifficulty, std::string selectedMap, std::string selectedMode)
+static void updatePresence(int32_t selectedCoopPlayerCount, double currentRound, std::string selectedDifficulty, std::string selectedMap, std::string selectedMode)
 {
-	std::string details = "Cruising around the menus", state = "";
+	std::string details = "Cruising around the menus", state = "", largeImageText = "";
 
 	DiscordRichPresence discordPresence;
 	memset(&discordPresence, 0, sizeof(discordPresence));
@@ -30,11 +30,12 @@ static void updatePresence(int32_t selectedCoopPlayerCount, std::string selected
 			details += " with " + std::to_string(selectedCoopPlayerCount - 1) + " other people";
 		}
 
-		state = selectedDifficulty + ", " + std::regex_replace(selectedMode, std::regex("(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))"), " $1"); // same std::regex as last one
+		state = "Round " + std::to_string(((int)currentRound) + 1); // same std::regex as last one
 
 		transform(selectedMap.begin(), selectedMap.end(), selectedMap.begin(), ::tolower); // change selectedMap to lower so we can get image key from discord
 		discordPresence.largeImageKey = std::regex_replace("mapselect" + selectedMap + "button", std::regex("[$ & +, :; = ? @# | '<>.-^*()%!]"), "_").c_str(); // the std::regex for this one replaces all special characters with _; this is the same regex discord uses for image keys
 		discordPresence.smallImageKey = "logo";
+		largeImageText = selectedDifficulty + ", " + std::regex_replace(selectedMode, std::regex("(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))"), " $1");
 	} // if selectedDifficulty, selectedMap, and selectedMode are not empty, construct a rich presence; large image of map, small image of btd6 logo, details saying map you're playing and difficulty+mode
 	else
 	{
@@ -44,6 +45,7 @@ static void updatePresence(int32_t selectedCoopPlayerCount, std::string selected
 
 	discordPresence.details = details.c_str();
 	discordPresence.state = state.c_str();
+	discordPresence.largeImageText = largeImageText.c_str();
 	discordPresence.instance = 0;
 	Discord_UpdatePresence(&discordPresence);
 }
@@ -77,6 +79,7 @@ void Run()
 	while (true)
 	{
 		Il2CppClass* inGameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity.UI_New.InGame", "InGame");
+		Il2CppClass* konfuzeClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Utils", "KonFuze");
 		FieldInfo* instance = il2cpp_class_get_field_from_name(inGameClass, "instance");
 
 		InGame* inGameInstAddr = 0;
@@ -85,17 +88,22 @@ void Run()
 		{
 			InGame* inGame = (InGame*)(inGameInstAddr);
 			Helpers_InGameData inGameData = inGame->fields.inGameData;
-			// set up parameters for presence
-			int32_t selectedCoopPlayerCount = inGameData.selectedCoopPlayerCount;
-			std::string selectedDifficulty = BTD6API::StringUtils::toString(inGameData.selectedDifficulty);
-			std::string selectedMap = BTD6API::StringUtils::toString(inGameData.selectedMap);
-			std::string selectedMode = BTD6API::StringUtils::toString(inGameData.selectedMode);
-			// make presence
-			updatePresence(selectedCoopPlayerCount, selectedDifficulty, selectedMap, selectedMode);
+			Spawner* spawner = inGame->fields.bridge->fields.simulation->fields.map->fields.spawner;
+			if (spawner != NULL)
+			{
+				// set up parameters for presence
+				int32_t selectedCoopPlayerCount = inGameData.selectedCoopPlayerCount;
+				double currentRound = BTD6API::KonFuze::get_Value(konfuzeClass, spawner->fields.currentRound);
+				std::string selectedDifficulty = BTD6API::StringUtils::toString(inGameData.selectedDifficulty);
+				std::string selectedMap = BTD6API::StringUtils::toString(inGameData.selectedMap);
+				std::string selectedMode = BTD6API::StringUtils::toString(inGameData.selectedMode);
+				// make presence
+				updatePresence(selectedCoopPlayerCount, currentRound, selectedDifficulty, selectedMap, selectedMode);
+			}
 		}
 		else
 		{
-			updatePresence(-1, "", "", "");
+			updatePresence(-1, -1, "", "", "");
 		}
 
 #ifdef DISCORD_DISABLE_IO_THREAD

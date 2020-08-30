@@ -1,12 +1,18 @@
 # BTD6API
-An API allowing you to develop BTD6 mod tools.
+An API allowing you to develop BTD6 mod tools that can be injected using [TD Loader](https://github.com/TDToolbox/TD-Loader/releases).
 <p align="center">
     <a href="https://discord.gg/nuMvgkP" alt="Discord">
         <img src="https://img.shields.io/discord/504782676331331584" /></a>
 </p>
 
-## Dependencies
-To inject mods, you will need to use https://github.com/TDToolbox/TD-Loader/. This tool can also be used for modding BTD5, BMC, and Battles :)
 ## How to use in your project
 - Click "Clone or download," and then "Open in Visual Studio" (if available) or "Download ZIP" if the aforementioned option is not available.
 - Look to the Examples folder and/or the Wiki to learn how to use this API from here!
+
+## Credits
+Thanks to:
+- DerPopo for making [UABE](https://github.com/derpopo/uabe), which handles asset patching.
+- DisabledMallis and gurrenm4 for making [TD Loader](https://github.com/TDToolbox/TD-Loader/releases), which handles mod injection.
+- djkaty for making [Il2CppInspector](https://github.com/djkaty/Il2CppInspector), which is the backbone of this API.
+- Perfare for making [AssetStudio](https://github.com/Perfare/AssetStudio) and [Il2CppDumper](https://github.com/Perfare/Il2CppDumper).
+- NinjaKiwi for making the [B](https://ninjakiwi.com/Games/Tower-Defense/Bloons-Tower-Defense.html)[l](https://ninjakiwi.com/Games/Tower-Defense/Bloons-Tower-Defense-2.html)[o](https://ninjakiwi.com/Games/Tower-Defense/Bloons-Tower-Defense-3.html)[o](https://ninjakiwi.com/Games/Tower-Defense/Bloons-Tower-Defense-4.html)[n](https://store.steampowered.com/app/306020/Bloons_TD_5/)[s](https://store.steampowered.com/app/960090/Bloons_TD_6/) series of games.

@@ -1,5 +1,5 @@
 # BTD6API
-An API allowing you to develop BTD6 mod tools that can be injected using [BTD6 Mod Manager](https://github.com/TDToolbox/BTD6-Mod-Manager/releases/latest).
+An API allowing you to develop BTD6 mods that can be injected using [BTD6 Mod Manager](https://github.com/TDToolbox/BTD6-Mod-Manager/releases/latest).
 <p align="center">
     <a href="https://discord.gg/nuMvgkP" alt="Discord">
         <img src="https://img.shields.io/discord/504782676331331584" /></a>

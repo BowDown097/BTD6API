@@ -7,9 +7,11 @@
 
 using namespace app;
 
-static void updatePresence(int32_t selectedCoopPlayerCount, double currentRound, std::string selectedDifficulty, std::string selectedMap, std::string selectedMode)
+static void updatePresence(int selectedCoopPlayerCount, int currentRound, int health, int cash, std::string selectedDifficulty, std::string selectedMap, std::string selectedMode)
 {
 	std::string details = "Cruising around the menus", state = "", largeImageText = "";
+	std::regex pascalSplit("(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))"); // ya ik std::regex cring
+	std::regex removeSpecialChar("[$ & +, :; = ? @# | '<>.-^*()%!]");
 
 	DiscordRichPresence discordPresence;
 	memset(&discordPresence, 0, sizeof(discordPresence));
@@ -24,24 +26,24 @@ static void updatePresence(int32_t selectedCoopPlayerCount, double currentRound,
 			selectedMap = "MonkeyMeadow";
 		} // change Tutorial (Monkey Meadow's internal name) to MonkeyMeadow
 
-		details = "Playing " + std::regex_replace(selectedMap, std::regex("(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))"), " $1"); // ya ik std::regex cring but this seems to be best way to split PascalCase into separate words (required for map names and mode names)
+		details = "Playing " + std::regex_replace(selectedMap, pascalSplit, " $1");
 		if (selectedCoopPlayerCount > 0)
 		{
 			details += " with " + std::to_string(selectedCoopPlayerCount - 1) + " other people";
 		}
 
-		state = "Round " + std::to_string(((int)currentRound) + 1); // same std::regex as last one
+		state = "Round " + std::to_string(currentRound + 1) + ", $" + std::to_string(cash) + ", " + std::to_string(health) + " Lives";
+		largeImageText = selectedDifficulty + ", " + std::regex_replace(selectedMode, pascalSplit, " $1");
 
-		transform(selectedMap.begin(), selectedMap.end(), selectedMap.begin(), ::tolower); // change selectedMap to lower so we can get image key from discord
-		discordPresence.largeImageKey = std::regex_replace("mapselect" + selectedMap + "button", std::regex("[$ & +, :; = ? @# | '<>.-^*()%!]"), "_").c_str(); // the std::regex for this one replaces all special characters with _; this is the same regex discord uses for image keys
+		transform(selectedMap.begin(), selectedMap.end(), selectedMap.begin(), ::tolower); // change selectedMap to lower so we can get image key
+		discordPresence.largeImageKey = std::regex_replace("mapselect" + selectedMap + "button", removeSpecialChar, "_").c_str(); // the std::regex for this one replaces all special characters with _; this is the same regex discord uses for image keys
 		discordPresence.smallImageKey = "logo";
-		largeImageText = selectedDifficulty + ", " + std::regex_replace(selectedMode, std::regex("(\\B[A-Z]+?(?=[A-Z][^A-Z])|\\B[A-Z]+?(?=[^A-Z]))"), " $1");
-	} // if selectedDifficulty, selectedMap, and selectedMode are not empty, construct a rich presence; large image of map, small image of btd6 logo, details saying map you're playing and difficulty+mode
+	} // if player if fully in-game, RP = large image of map (tooltip of difficulty), small image of btd6 logo, details = map, state = round, lives, and cash
 	else
 	{
 		discordPresence.largeImageKey = "logo";
 		discordPresence.smallImageKey = "";
-	} // if the condition doesn't pass, do rich presence differently; large image of btd6 logo, no small image key. details will be the default "Cruising around the menus" (should be in menus if the aforementioned strings are empty)
+	} // if the condition doesn't pass, RP = large image of btd6 logo, details will be "Cruising around the menus"
 
 	discordPresence.details = details.c_str();
 	discordPresence.state = state.c_str();
@@ -88,22 +90,30 @@ void Run()
 		{
 			InGame* inGame = (InGame*)(inGameInstAddr);
 			Helpers_InGameData inGameData = inGame->fields.inGameData;
-			Spawner* spawner = inGame->fields.bridge->fields.simulation->fields.map->fields.spawner;
+			Simulation* simulation = inGame->fields.bridge->fields.simulation;
+			Spawner* spawner = simulation->fields.map->fields.spawner;
 			if (spawner != NULL)
 			{
-				// set up parameters for presence
-				int32_t selectedCoopPlayerCount = inGameData.selectedCoopPlayerCount;
-				double currentRound = BTD6API::KonFuze::get_Value(konfuzeClass, spawner->fields.currentRound);
-				std::string selectedDifficulty = BTD6API::StringUtils::toString(inGameData.selectedDifficulty);
-				std::string selectedMap = BTD6API::StringUtils::toString(inGameData.selectedMap);
-				std::string selectedMode = BTD6API::StringUtils::toString(inGameData.selectedMode);
-				// make presence
-				updatePresence(selectedCoopPlayerCount, currentRound, selectedDifficulty, selectedMap, selectedMode);
+				// parameters for rich presence
+				Simulation_CashManager* cashManager = simulation->fields.cashManagers->fields.entries->vector[0].value;
+				if (cashManager != NULL)
+				{
+					// get konfuze values (current round, health, cash)
+					double cash = BTD6API::KonFuze::get_Value(assembly->image, cashManager->fields.cash);
+					double currentRound = BTD6API::KonFuze::get_Value(assembly->image, spawner->fields.currentRound);
+					double lives = BTD6API::KonFuze::get_Value(assembly->image, simulation->fields.health);
+					// get in-game data
+					int selectedCoopPlayerCount = inGameData.selectedCoopPlayerCount;
+					std::string selectedDifficulty = BTD6API::StringUtils::toString(inGameData.selectedDifficulty);
+					std::string selectedMap = BTD6API::StringUtils::toString(inGameData.selectedMap);
+					std::string selectedMode = BTD6API::StringUtils::toString(inGameData.selectedMode);
+					updatePresence(selectedCoopPlayerCount, currentRound, lives, cash, selectedDifficulty, selectedMap, selectedMode);
+				}
 			}
 		}
 		else
 		{
-			updatePresence(-1, -1, "", "", "");
+			updatePresence(-1, -1, -1, -1, "", "", "");
 		}
 
 #ifdef DISCORD_DISABLE_IO_THREAD

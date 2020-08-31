@@ -38,8 +38,9 @@ namespace BTD6API
 	class KonFuze
 	{
 	public:
-		static double get_Value(Il2CppClass* konfuzeClass, app::KonFuze* konfuzeObj)
+		static double get_Value(Il2CppImage* assemblyImage, app::KonFuze* konfuzeObj)
 		{
+			Il2CppClass* konfuzeClass = il2cpp_class_from_name(assemblyImage, "Assets.Scripts.Utils", "KonFuze");
 			const MethodInfo* _method = il2cpp_class_get_method_from_name(konfuzeClass, "get_Value", 0);
 			if (_method != nullptr)
 			{
@@ -47,8 +48,9 @@ namespace BTD6API
 			}
 		}
 		
-		static void set_Value(Il2CppClass* konfuzeClass, app::KonFuze* konfuzeObj, double val)
+		static void set_Value(Il2CppImage* assemblyImage, app::KonFuze* konfuzeObj, double val)
 		{
+			Il2CppClass* konfuzeClass = il2cpp_class_from_name(assemblyImage, "Assets.Scripts.Utils", "KonFuze");
 			const MethodInfo* _method = il2cpp_class_get_method_from_name(konfuzeClass, "Write", 1);
 			if (_method != nullptr)
 			{

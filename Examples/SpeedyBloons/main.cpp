@@ -2,6 +2,8 @@
 // Custom injected code entry point
 
 #include "pch.hpp"
+#include <cstdlib>
+#include <ctime>
 
 using namespace app;
 
@@ -10,8 +12,9 @@ void Run()
 {
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+    freopen_s((FILE**)stdin, "CONIN$", "r", stdin);
 
-    std::cout << "Initializing..." << std::endl;
+    std::cout << "Initializing Speedy Bloons..." << std::endl;
 
     size_t size = 0;
     const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(nullptr, &size);
@@ -35,6 +38,15 @@ void Run()
         return;
     }
 
+    std::cout << "Speedy Bloons Initialized succesfully!" << std::endl;
+
+    std::cout << "Please enter a integer of the max bloon speed wanted:" << std::endl;
+
+    size_t max = 0;
+    std::cin >> max;
+
+    std::srand(std::time(0));
+
     Game* gameInstance = (Game*)(gameInstAddr);
 
     BloonModel__Array* bloonModelArr = gameInstance->fields.model->fields.bloons;
@@ -44,7 +56,7 @@ void Run()
     {
         if (bloonModels[i] != NULL)
         {
-            float speed = 1 * (rand() % 100);
+            float speed = 1 * (std::rand() % max) + 1;
 
             if (bloonModels[i]->fields.display != NULL) {
                 std::wstring display = BTD6API::StringUtils::toWideString(bloonModels[i]->fields.display);
@@ -54,4 +66,6 @@ void Run()
             bloonModels[i]->fields.speed = speed;
         }
     }
+
+    std::cout << "Speedy Bloons sucesfully changed bloons speed!" << std::endl;
 }

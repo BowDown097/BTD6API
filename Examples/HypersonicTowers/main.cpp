@@ -26,15 +26,31 @@ void makeTowerHypersonic(TowerModel* tmdl) {
     Model** models = modelsArr->vector;
     if (models != NULL)
     {
-        for (int j = 0; j < modelsArr->max_length; ++j)
+        for (int i = 0; i < modelsArr->max_length; ++i)
         {
-            Model* model = models[j];
+            Model* model = models[i];
             if (model != NULL && model->fields.name != NULL)
             {
 
                 std::wstring name = BTD6API::StringUtils::toWideString(model->fields.name);
 
                 // This hero works differently to literally everything else in the game.
+                if (name.find(L"AbilityModel_UCAVAbility") != std::wstring::npos) {
+                    AbilityModel* ab = (AbilityModel*)model;
+
+                    for (int j = 0; j < ab->fields.behaviors->max_length; ++j) {
+                        Model* bm = ab->fields.behaviors->vector[j];
+
+                        std::wstring modelName = BTD6API::StringUtils::toWideString(bm->fields.name);
+
+                        if (modelName.find(L"UCAVModel") != std::wstring::npos) {
+                            UCAVModel* mdl = (UCAVModel*)(bm);
+                            makeTowerHypersonic(mdl->fields.uavTowerModel);
+                            makeTowerHypersonic(mdl->fields.ucavTowerModel);
+                        }
+                    }
+                }
+
                 if (name.find(L"DroneSupportModel") != std::wstring::npos) {
                     DroneSupportModel* dsm = (DroneSupportModel*)(model);
                     makeTowerHypersonic(dsm->fields.droneModel);
@@ -51,8 +67,9 @@ void makeTowerHypersonic(TowerModel* tmdl) {
 }
 
 
-void makeHypersonic(TowerModel__Array* towersArr, const std::string& where)
+void makeHypersonic(GameModel* gmdl, const std::string& where)
 {
+    TowerModel__Array* towersArr = gmdl->fields.towers;
     TowerModel** towers = towersArr->vector;
 
     for (int i = 0; i < towersArr->max_length; ++i)
@@ -94,20 +111,20 @@ void Run()
     if (inGameInstAddr != NULL)
     {
         InGame* inGameInstance = (InGame*)inGameInstAddr;
-        makeHypersonic(inGameInstance->fields.bridge->fields.simulation->fields.model->fields.towers, "in-game");
+        makeHypersonic(inGameInstance->fields.bridge->fields.simulation->fields.model, "in-game");
     }
     // game patches
-	Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
-	FieldInfo* gameInstanceInfo = il2cpp_class_get_field_from_name(gameClass, "instance");
-	Game* gameInstAddr = 0;
-	il2cpp_field_static_get_value(gameInstanceInfo, &gameInstAddr);
+    Il2CppClass* gameClass = il2cpp_class_from_name(assembly->image, "Assets.Scripts.Unity", "Game");
+    FieldInfo* gameInstanceInfo = il2cpp_class_get_field_from_name(gameClass, "instance");
+    Game* gameInstAddr = 0;
+    il2cpp_field_static_get_value(gameInstanceInfo, &gameInstAddr);
 
-	if (gameInstAddr == NULL)
-	{
-		std::cout << "Some error occurred when trying to access the game model." << std::endl;
-		return;
-	}
+    if (gameInstAddr == NULL)
+    {
+        std::cout << "Some error occurred when trying to access the game model." << std::endl;
+        return;
+    }
 
-	Game* gameInstance = (Game*)gameInstAddr;
-    makeHypersonic(gameInstance->fields.model->fields.towers, "game");
+    Game* gameInstance = (Game*)gameInstAddr;
+    makeHypersonic(gameInstance->fields.model, "game");
 }

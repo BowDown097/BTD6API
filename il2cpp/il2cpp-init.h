@@ -8,8 +8,9 @@
 // Application-specific types
 #include "il2cpp-types.h"
 
+// These do not automatically update
 // IL2CPP API function pointers
-#include "il2cpp-api-functions-ptr.h"
+//#include "il2cpp-api-functions-ptr.h"
 
 // IL2CPP APIs
 #define DO_API(r, n, p) r (*n) p
@@ -79,10 +80,11 @@
 // Initialize everything
 void init_il2cpp() {
 	// Get base address of IL2CPP module
+	HMODULE hmod = GetModuleHandleW(L"GameAssembly.dll");
 	uintptr_t baseAddress = (uintptr_t) GetModuleHandleW(L"GameAssembly.dll");
 
 	// Define IL2CPP API function addresses
-	#define DO_API(r, n, p) n = (r (*) p)(baseAddress + n ## _ptr)
+#define DO_API(r, n, p) n = (r (*) p)(GetProcAddress(hmod,#n))
 	#include "il2cpp-api-functions.h"
 	#undef DO_API
 

@@ -9,7 +9,7 @@
 #include "il2cpp-types.h"
 
 // IL2CPP API function pointers
-#include "il2cpp-function-ptr.h"
+#include "il2cpp-api-functions-ptr.h"
 
 // IL2CPP APIs
 #define DO_API(r, n, p) r (*n) p
@@ -23,7 +23,7 @@
 
 // TypeInfo pointers
 #define DO_TYPEDEF(a, n) n ## __Class* n ## __TypeInfo
-#include "il2cpp-type-ptr.h"
+#include "il2cpp-types-ptr.h"
 #undef DO_TYPEDEF
 
 // Try not to include any Windows symbosl that might cause a naming conflict
@@ -93,6 +93,6 @@ void init_il2cpp() {
 
 	// Define TypeInfo variables
 	#define DO_TYPEDEF(a, n) n ## __TypeInfo = *(n ## __Class**) (baseAddress + a);
-	#include "il2cpp-type-ptr.h"
+	#include "il2cpp-types-ptr.h"
 	#undef DO_TYPEDEF
 }

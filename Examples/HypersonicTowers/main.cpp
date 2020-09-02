@@ -5,6 +5,51 @@
 
 using namespace app;
 
+void makeWeaponHypersonic(AttackModel* attack) {
+    WeaponModel__Array* weaponsArr = attack->fields.weapons;
+    WeaponModel** weapons = weaponsArr->vector;
+
+    for (int k = 0; k < weaponsArr->max_length; ++k)
+    {
+        WeaponModel* weapon = weapons[k];
+
+        if (weapon != NULL)
+        {
+            weapon->fields.rate = 0.0f;
+            weapon->fields.rateFrames = 0;
+        }
+    }
+}
+
+void makeTowerHypersonic(TowerModel* tmdl) {
+    Model__Array* modelsArr = tmdl->fields.behaviors;
+    Model** models = modelsArr->vector;
+    if (models != NULL)
+    {
+        for (int j = 0; j < modelsArr->max_length; ++j)
+        {
+            Model* model = models[j];
+            if (model != NULL && model->fields.name != NULL)
+            {
+
+                std::wstring name = BTD6API::StringUtils::toWideString(model->fields.name);
+
+                // This hero works differently to literally everything else in the game.
+                if (name.find(L"DroneSupportModel") != std::wstring::npos) {
+                    DroneSupportModel* dsm = (DroneSupportModel*)(model);
+                    makeTowerHypersonic(dsm->fields.droneModel);
+                }
+
+                if (name.find(L"AttackModel") != std::wstring::npos || name.find(L"AttackAirUnitModel") != std::wstring::npos)
+                {
+                    AttackModel* attack = (AttackModel*)model;
+                    makeWeaponHypersonic(attack);
+                }
+            }
+        }
+    }
+}
+
 
 void makeHypersonic(TowerModel__Array* towersArr, const std::string& where)
 {
@@ -14,37 +59,7 @@ void makeHypersonic(TowerModel__Array* towersArr, const std::string& where)
     {
         if (towers[i]->fields.display != NULL)
         {
-            Model__Array* modelsArr = towers[i]->fields.behaviors;
-            Model** models = modelsArr->vector;
-            if (models != NULL)
-            {
-                for (int j = 0; j < modelsArr->max_length; ++j)
-                {
-                    Model* model = models[j];
-                    if (model != NULL && model->fields.name != NULL)
-                    {
-                        std::wstring name = BTD6API::StringUtils::toWideString(model->fields.name);
-                        if (name.find(L"AttackModel") != std::wstring::npos || name.find(L"AttackAirUnitModel") != std::wstring::npos)
-                        {
-                            AttackModel* attack = (AttackModel*)model;
-
-                            WeaponModel__Array* weaponsArr = attack->fields.weapons;
-                            WeaponModel** weapons = weaponsArr->vector;
-                            
-                            for (int k = 0; k < weaponsArr->max_length; ++k)
-                            {
-                                WeaponModel* weapon = weapons[k];
-
-                                if (weapon != NULL)
-                                {
-                                    weapon->fields.rate = 0.0f;
-                                    weapon->fields.rateFrames = 0;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            makeTowerHypersonic(towers[i]);
         }
     }
 

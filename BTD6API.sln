@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestDLL", "Examples\TestDLL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RichPresence", "Examples\RichPresence\RichPresence.vcxproj", "{8882E4EA-8840-4B1F-8615-214FCB674490}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpeedyBloons", "Examples\SpeedyBloons\SpeedyBloons.vcxproj", "{52AD30E9-406E-4E73-A9B7-D5C7FF816754}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Randomizer", "Examples\Randomizer\Randomizer.vcxproj", "{52AD30E9-406E-4E73-A9B7-D5C7FF816754}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Speedhack", "Examples\Speedhack\Speedhack.vcxproj", "{99C37048-3FF6-4706-AA06-F1727C3F5190}"
 EndProject

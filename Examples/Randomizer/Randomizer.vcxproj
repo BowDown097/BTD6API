@@ -22,8 +22,9 @@
     <!--<VCProjectVersion>16.0</VCProjectVersion>-->
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{52AD30E9-406E-4E73-A9B7-D5C7FF816754}</ProjectGuid>
-    <RootNamespace>SpeedyBloons</RootNamespace>
+    <RootNamespace>Randomizer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Randomizer</ProjectName>
     <!--<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>-->
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

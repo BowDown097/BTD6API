@@ -14,14 +14,8 @@ enum RandomType {
 
 template<typename T>
 struct RandBounds {
-    union {
         T m_min;
-        T m_mean;
-    };
-    union {
         T m_max;
-        T m_stand_dev;
-    };
 };
 
 int64_t g_seed = 0;
@@ -57,7 +51,7 @@ public:
             return clampVal(val, min_clamp, max_clamp);
         }
         else if (m_rand_t == RANDOM_NORMAL) {
-            m_ndist = std::normal_distribution<T>(bounds.m_mean, bounds.m_stand_dev);
+            m_ndist = std::normal_distribution<T>(bounds.m_min, bounds.m_max);
             T val = m_ndist(m_generator);
             return clampVal(val, min_clamp, max_clamp);
         }
@@ -146,21 +140,22 @@ public:
 };
 
 bool promptIsMultiply() {
-    std::cout << "Default: (1) set" << std::endl;
+    std::cout << "Default: (1) Set" << std::endl;
     std::cout << "(1) Set (speed = r). R of 5 means speed of 5" << std::endl;
     std::cout << "(2) Multiplied (speed *= r) If R=5 and speed=2, then output is 10" << std::endl;
 
-    std::string strDist;
+    std::string strIsMult;
 
     for (;;) {
         int64_t temp_val;
-        std::getline(std::cin, strDist);
-        if (strDist == "") {
+        std::getline(std::cin, strIsMult);
+        std::getline(std::cin, strIsMult);
+        if (strIsMult == "") {
             std::cout << "Empty option entered, using default" << std::endl;
             return false;
         }
         try {
-            temp_val = std::stoll(strDist);
+            temp_val = std::stoll(strIsMult);
             if (temp_val < 1 || temp_val > 2) {
                 throw std::exception();
             }
@@ -195,10 +190,10 @@ void RandomizeBloonSpeeds(GameModel* gmdl) {
             if (bloonModels[i]->fields.display != NULL) {
                 float oldSpeed = bloonModels[i]->fields.speed;
                 if (isMultiply) {
-                    bloonModels[i]->fields.speed = rand.GetRand(BLOON_MIN_SPEED);
+                    bloonModels[i]->fields.speed *= rand.GetRand(BLOON_MIN_SPEED);
                 }
                 else {
-
+                    bloonModels[i]->fields.speed = rand.GetRand(BLOON_MIN_SPEED);
                 }
                 //wchar_t* display = (wchar_t*)(&bloonModels[i]->fields.display->fields.m_firstChar);
                 // This is broken for some reason

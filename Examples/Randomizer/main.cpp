@@ -4,33 +4,48 @@
 #include "pch.hpp"
 #include <random>
 #include <chrono>
+#include <sstream>
+#include <iomanip>
 
 using namespace app;
 
-enum RandomType {
+//
+// Randomizer mod
+// Randomizes Bloon speeds
+//
+
+int64_t g_seed = 0;
+
+enum DistType : uint8_t {
     RANDOM_UNIFORM = 0,
     RANDOM_NORMAL = 1
 };
 
-template<typename T>
-struct RandBounds {
-        T m_min;
-        T m_max;
+enum OpType : uint8_t {
+    OP_SET = 0,
+    OP_MULTIPLY = 1,
+    OP_ADD = 2
 };
 
-int64_t g_seed = 0;
+template<typename T>
+struct RandBounds {
+    T min;
+    T max;
+};
 
 template<typename T>
-class Rand {
-public:
-    int64_t m_seed;
-    RandomType m_rand_t;
-    std::default_random_engine m_generator;
-    RandBounds<T> bounds;
-    std::uniform_real_distribution<T> m_udist;
-    std::normal_distribution<T> m_ndist;
+struct RandStuff {
+    std::default_random_engine generator;
+    std::uniform_real_distribution<T> udist;
+    std::normal_distribution<T> ndist;
+};
 
-    Rand(uint64_t seed = g_seed) { m_seed = seed; };
+template<typename T>
+struct Opt {
+    bool isEnabled;
+    DistType t;
+    RandBounds<T> bounds;
+    OpType op_t;
 
     T clampVal(T val, T min_clamp, T max_clamp) {
         if (val < min_clamp) {
@@ -44,37 +59,48 @@ public:
         return val;
     }
 
-    T GetRand(T min_clamp = 0, T max_clamp = std::numeric_limits<T>::max()) {
-        if (m_rand_t == RANDOM_UNIFORM) {
-            m_udist = std::uniform_real_distribution<T>(bounds.m_min, bounds.m_max);
-            T val = m_udist(m_generator);
-            return clampVal(val, min_clamp, max_clamp);
+#pragma region Prompts
+    void promptRandomization(const char* s) {
+        std::string strOpt = "";
+        std::cout << "Do you want to Randomize " << s << " ? (Y/N)" << std::endl;
+        std::cin >> strOpt;
+        if (strOpt == "Y" || strOpt == "y") {
+            std::cout << "Randomizing " << s << " Bloon Speeds!" << std::endl;
+            isEnabled = true;
+            return;
         }
-        else if (m_rand_t == RANDOM_NORMAL) {
-            m_ndist = std::normal_distribution<T>(bounds.m_min, bounds.m_max);
-            T val = m_ndist(m_generator);
-            return clampVal(val, min_clamp, max_clamp);
-        }
-        else {
-            throw std::exception("Get Rand has invalid type!");
-        }
+        isEnabled = false;
     }
 
-    void GetBounds(T min_clamp = 0, T max_clamp = std::numeric_limits<T>::max()) {
+    void promptBounds(T min_clamp = 0, T max_clamp = std::numeric_limits<T>::max()) {
         std::string min;
         std::string max;
-        if (m_rand_t == RANDOM_UNIFORM) {
+        if (t == RANDOM_UNIFORM) {
+            std::cout << "What do you want the min and max of the distrubtion to be?" << std::endl;
             std::cout << "Enter a minimum value" << std::endl;
         }
-        else if (m_rand_t == RANDOM_NORMAL) {
+        else if (t == RANDOM_NORMAL) {
+            std::cout << "What do you want the mean and sigma of the distrubtion to be?" << std::endl;
             std::cout << "Enter the Mean value" << std::endl;
         }
-        
+
         for (;;) {
             std::cin >> min;
             try {
-                bounds.m_min = static_cast<T>(std::stod(min));
-                bounds.m_min = clampVal(bounds.m_min, min_clamp, max_clamp);
+                if (sizeof(T) == 8) {
+                    // stod is probably bad, but it works
+                    double tempval = std::stod(min);
+                    bounds.min = static_cast<T>(tempval);
+                }
+                else if (sizeof(T) == 4) {
+                    float tempval = std::stof(min);
+                    bounds.min = static_cast<T>(tempval);
+                }
+                else {
+                    std::cout << "Invalid size!" << std::endl;
+                }
+
+                bounds.min = clampVal(bounds.min, min_clamp, max_clamp);
                 break;
             }
             catch (std::exception e) {
@@ -83,18 +109,29 @@ public:
             }
         }
 
-        if (m_rand_t == RANDOM_UNIFORM) {
+        if (t == RANDOM_UNIFORM) {
             std::cout << "Enter a maxmimum value" << std::endl;
         }
-        else if (m_rand_t == RANDOM_NORMAL) {
+        else if (t == RANDOM_NORMAL) {
             std::cout << "Enter the standard deviation" << std::endl;
         }
 
         for (;;) {
             std::cin >> max;
             try {
-                bounds.m_max = static_cast<T>(std::stod(max));
-                bounds.m_max = clampVal(bounds.m_max, min_clamp, max_clamp);
+                if (sizeof(T) == 8) {
+                    // stod is probably bad, but it works
+                    double tempval = std::stod(max);
+                    bounds.max = static_cast<T>(tempval);
+                }
+                else if (sizeof(T) == 4) {
+                    float tempval = std::stof(max);
+                    bounds.max = static_cast<T>(tempval);
+                }
+                else {
+                    std::cout << "Invalid size!" << std::endl;
+                }
+                bounds.max = clampVal(bounds.max, min_clamp, max_clamp);
                 break;
             }
             catch (std::exception e) {
@@ -105,7 +142,8 @@ public:
 
     }
 
-    void GetDistribution() {
+    void promptDistribution() {
+        std::cout << "How do you want your random values to be distributed?" << std::endl;
         std::cout << "Default: (1) Uniform Distribution" << std::endl;
         std::cout << "(1) Uniform Distribution" << std::endl;
         std::cout << "(2) Normal Distribution" << std::endl;
@@ -117,16 +155,15 @@ public:
             std::getline(std::cin, strDist);
             if (strDist == "") {
                 std::cout << "Empty distribution entered, using default" << std::endl;
-                m_rand_t = RANDOM_UNIFORM;
+                t = RANDOM_UNIFORM;
                 break;
-            }     
+            }
             try {
                 temp_val = std::stoll(strDist);
                 if (temp_val < 1 || temp_val > 2) {
                     throw std::exception();
                 }
-                m_generator = std::default_random_engine(m_seed);
-                m_rand_t = (RandomType)(temp_val - 1);
+                t = (DistType)(temp_val - 1);
                 break;
             }
             catch (std::exception e) {
@@ -136,49 +173,120 @@ public:
         }
     }
 
+    void promptOp() {
+        std::cout << "What operator do you want to have applied to your random values?" << std::endl;
+        std::cout << "Default: (1) Set" << std::endl;
+        std::cout << "(1) Set (speed = r). R of 5 means speed of 5" << std::endl;
+        std::cout << "(2) Multiplied (speed *= r) If R=5 and speed=2, then output is 10" << std::endl;
+        std::cout << "(3) Add (speed += r) If R=5 and speed=2, then output is 7 (Supports negatives!)" << std::endl;
 
-};
+        std::string strOp;
 
-bool promptIsMultiply() {
-    std::cout << "Default: (1) Set" << std::endl;
-    std::cout << "(1) Set (speed = r). R of 5 means speed of 5" << std::endl;
-    std::cout << "(2) Multiplied (speed *= r) If R=5 and speed=2, then output is 10" << std::endl;
-
-    std::string strIsMult;
-
-    for (;;) {
-        int64_t temp_val;
-        std::getline(std::cin, strIsMult);
-        std::getline(std::cin, strIsMult);
-        if (strIsMult == "") {
-            std::cout << "Empty option entered, using default" << std::endl;
-            return false;
-        }
-        try {
-            temp_val = std::stoll(strIsMult);
-            if (temp_val < 1 || temp_val > 2) {
-                throw std::exception();
+        for (;;) {
+            int64_t temp_val;
+            // WHy 2????
+            std::getline(std::cin, strOp);
+            std::getline(std::cin, strOp);
+            if (strOp == "") {
+                std::cout << "Empty option entered, using default" << std::endl;
+                op_t = OP_SET;
+                break;
             }
-            return (bool)(temp_val - 1);
-        }
-        catch (std::exception e) {
-            std::cout << "Please enter a valid value" << std::endl;
-            continue;
+            try {
+                temp_val = std::stoll(strOp);
+                if (temp_val < 1 || temp_val > 3) {
+                    std::cout << "Please enter a valid value" << std::endl;
+                    continue;
+                }
+                op_t = (OpType)(temp_val - 1);
+                break;
+            }
+            catch (std::exception e) {
+                std::cout << "Please enter a valid value" << std::endl;
+                continue;
+            }
         }
     }
-}
+#pragma endregion
+
+    T doOp(T& a, T b) {
+        switch (op_t) {
+        case OP_SET:
+            a = b;
+            break;
+        case OP_MULTIPLY:
+            return a *= b;
+            break;
+        case OP_ADD:
+            return a += b;
+            break;
+        default:
+            std::cout << "Oophsie Whoopsie when choosing operator.";
+            return 0;
+        }
+    }
+
+    RandStuff<T>* r;
+
+    Opt() { r = new RandStuff<T>; r->generator = std::default_random_engine(g_seed); };
+    ~Opt() { delete r; }
+
+    T GetRand(T min_clamp = 0, T max_clamp = std::numeric_limits<T>::max()) {
+        if (t == RANDOM_UNIFORM) {
+            r->udist = std::uniform_real_distribution<T>(bounds.min, bounds.max);
+            T val = r->udist(r->generator);
+            return clampVal(val, min_clamp, max_clamp);
+        }
+        else if (t == RANDOM_NORMAL) {
+            r->ndist = std::normal_distribution<T>(bounds.min, bounds.max);
+            T val = r->ndist(r->generator);
+            return clampVal(val, min_clamp, max_clamp);
+        }
+        else {
+            throw std::exception("Get Rand has invalid type!");
+        }
+    }
+};
+
+struct Options {
+    size_t seed;
+
+    Opt<float> BloonSpeeds;
+    Opt<float> FireRate;
+
+    Options* fromString(std::string s) {
+        if (s.length() % 2 != 0) {
+            std::cout << "Error! String was not valid" << std::endl;
+        }
+
+        Options* ret = new Options;
+
+        for (auto i = 0; i < s.length(); i += 2) {
+            reinterpret_cast<uint8_t*>(ret)[i] = static_cast<uint8_t>(std::stoi(std::string("" + s[i])));
+            reinterpret_cast<uint8_t*>(ret)[i + 1] = static_cast<uint8_t>(std::stoi(std::string("" + s[i + 1])));
+        }
+
+        return ret;
+    }
+
+    std::string toString(Options* opt) {
+        std::stringstream ss;
+        ss << std::hex;
+
+        for (auto i = 0; i < sizeof(Options); ++i) {
+            ss << std::setw(2) << std::setfill('0') << (int)(reinterpret_cast<uint8_t*>(opt))[i];
+        }
+
+        return ss.str();
+    }
+};
 
 const float BLOON_MIN_SPEED = 0.05;
 
-void RandomizeBloonSpeeds(GameModel* gmdl) {
-
-    std::cout << "Do you want your bloon speeds to be set to their random values, or multuplied?" << std::endl;
-    bool isMultiply = promptIsMultiply();
-    Rand<float> rand;
-    std::cout << "How do you want your bloon speeds to be distributed?" << std::endl;
-    rand.GetDistribution();
-    std::cout << "What do you want your bounds to be?" << std::endl;
-    rand.GetBounds(BLOON_MIN_SPEED);
+void RandomizeBloonSpeeds(GameModel* gmdl, Options& opt) {
+    opt.BloonSpeeds.promptOp();
+    opt.BloonSpeeds.promptDistribution();
+    opt.BloonSpeeds.promptBounds();
 
     BloonModel__Array* bloonModelArr = gmdl->fields.bloons;
     BloonModel** bloonModels = bloonModelArr->vector;
@@ -189,12 +297,7 @@ void RandomizeBloonSpeeds(GameModel* gmdl) {
         {
             if (bloonModels[i]->fields.display != NULL) {
                 float oldSpeed = bloonModels[i]->fields.speed;
-                if (isMultiply) {
-                    bloonModels[i]->fields.speed *= rand.GetRand(BLOON_MIN_SPEED);
-                }
-                else {
-                    bloonModels[i]->fields.speed = rand.GetRand(BLOON_MIN_SPEED);
-                }
+                opt.BloonSpeeds.doOp(bloonModels[i]->fields.speed, opt.BloonSpeeds.GetRand(BLOON_MIN_SPEED));
                 //wchar_t* display = (wchar_t*)(&bloonModels[i]->fields.display->fields.m_firstChar);
                 // This is broken for some reason
                 std::wcout << "Speed was: " << oldSpeed << ", Speed now is: " << bloonModels[i]->fields.speed << std::endl;
@@ -205,6 +308,89 @@ void RandomizeBloonSpeeds(GameModel* gmdl) {
     std::cout << "Speedy Bloons sucesfully changed bloons speed!" << std::endl;
 }
 
+//
+// Randomize stuff yoinked from hypersonic
+//
+
+void RandomizeWeaponRate(AttackModel* attack, Options& opt) {
+    WeaponModel__Array* weaponsArr = attack->fields.weapons;
+    WeaponModel** weapons = weaponsArr->vector;
+
+    for (int k = 0; k < weaponsArr->max_length; ++k)
+    {
+        WeaponModel* weapon = weapons[k];
+
+        if (weapon != NULL)
+        {
+            float oldSpeed = weapon->fields.rate;
+            opt.FireRate.doOp(weapon->fields.rate, opt.FireRate.GetRand());
+
+           // std::wcout << "Speed was: " << oldSpeed << ", Speed now is: " << weapon->fields.rate << std::endl;
+        }
+    }
+}
+
+void RandomizeTowerRate(TowerModel* tmdl, Options& opt) {
+    Model__Array* modelsArr = tmdl->fields.behaviors;
+    Model** models = modelsArr->vector;
+    if (models != NULL)
+    {
+        for (int i = 0; i < modelsArr->max_length; ++i)
+        {
+            Model* model = models[i];
+            if (model != NULL && model->fields.name != NULL)
+            {
+
+                std::wstring name = BTD6API::StringUtils::toWideString(model->fields.name);
+
+                // This hero works differently to literally everything else in the game.
+                if (name.find(L"AbilityModel_UCAVAbility") != std::wstring::npos) {
+                    AbilityModel* ab = (AbilityModel*)model;
+
+                    for (int j = 0; j < ab->fields.behaviors->max_length; ++j) {
+                        Model* bm = ab->fields.behaviors->vector[j];
+
+                        std::wstring modelName = BTD6API::StringUtils::toWideString(bm->fields.name);
+
+                        if (modelName.find(L"UCAVModel") != std::wstring::npos) {
+                            UCAVModel* mdl = (UCAVModel*)(bm);
+                            RandomizeTowerRate(mdl->fields.uavTowerModel, opt);
+                            RandomizeTowerRate(mdl->fields.ucavTowerModel, opt);
+                        }
+                    }
+                }
+
+                if (name.find(L"DroneSupportModel") != std::wstring::npos) {
+                    DroneSupportModel* dsm = (DroneSupportModel*)(model);
+                    RandomizeTowerRate(dsm->fields.droneModel, opt);
+                }
+
+                if (name.find(L"AttackModel") != std::wstring::npos || name.find(L"AttackAirUnitModel") != std::wstring::npos)
+                {
+                    AttackModel* attack = (AttackModel*)model;
+                    RandomizeWeaponRate(attack, opt);
+                }
+            }
+        }
+    }
+}
+
+void RandomizeTowerRate(GameModel* gmdl, Options& opt) {
+    opt.FireRate.promptOp();
+    opt.FireRate.promptDistribution();
+    opt.FireRate.promptBounds();
+
+    TowerModel__Array* towersArr = gmdl->fields.towers;
+    TowerModel** towers = towersArr->vector;
+
+    for (int i = 0; i < towersArr->max_length; ++i)
+    {
+        if (towers[i]->fields.display != NULL)
+        {
+            RandomizeTowerRate(towers[i], opt);
+        }
+    }
+}
 
 
 void RandomizeGameModel(GameModel* gmdl, const std::string& where)
@@ -213,10 +399,9 @@ void RandomizeGameModel(GameModel* gmdl, const std::string& where)
     std::cout << "Using  (" << where << ")" << "model" << std::endl;
 
     std::string strSeed;
-    
 
-    std::cout << "Please enter a seed (" << 
-        std::numeric_limits<decltype(g_seed)>::min() << "-" << 
+    std::cout << "Please enter a seed (" <<
+        std::numeric_limits<decltype(g_seed)>::min() << " - " <<
         std::numeric_limits<decltype(g_seed)>::max() << ")" << std::endl;
 
     for (;;) {
@@ -238,28 +423,22 @@ void RandomizeGameModel(GameModel* gmdl, const std::string& where)
 
     std::cout << "Seed is: " << g_seed << std::endl;
 
-    std::string opt = "";
-    std::cout << "Do you want to Randomize bloons speeds? (Y/N)" << std::endl;
-    std::cin >> opt;
-    if (opt == "Y" || opt == "y") {
-        std::cout << "Randomizing Bloon Speeds!" << std::endl;
-        RandomizeBloonSpeeds(gmdl);
+    Options opt = Options();
+    opt.BloonSpeeds.promptRandomization("Bloon Speeds");
+    if (opt.BloonSpeeds.isEnabled) {
+        RandomizeBloonSpeeds(gmdl, opt);
+    }
+
+    opt.FireRate.promptRandomization("Fire rates");
+    if (opt.FireRate.isEnabled) {
+        RandomizeTowerRate(gmdl, opt);
     }
 
     std::cout << "Randomizing Bloon Speeds!" << g_seed << std::endl;
 
-    
+    //std::cout << "funny1" << sizeof(Options) << std::endl;
+    //std::cout << "funny2: " << opt.toString(&opt) << std::endl;
 
-    //TowerModel__Array* towersArr = gmdl->fields.towers;
-    //TowerModel** towers = towersArr->vector;
-
-    //for (int i = 0; i < towersArr->max_length; ++i)
-    //{
-    //    if (towers[i]->fields.display != NULL)
-    //    {
-    //        makeTowerHypersonic(towers[i]);
-    //    }
-    //}
 }
 
 // Injected code entry point

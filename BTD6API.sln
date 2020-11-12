@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "il2cpp", "il2cpp", "{84B750
 	ProjectSection(SolutionItems) = preProject
 		il2cpp\il2cpp-api-functions-ptr.h = il2cpp\il2cpp-api-functions-ptr.h
 		il2cpp\il2cpp-api-functions.h = il2cpp\il2cpp-api-functions.h
+		il2cpp\il2cpp-extra.h = il2cpp\il2cpp-extra.h
 		il2cpp\il2cpp-functions.h = il2cpp\il2cpp-functions.h
 		il2cpp\il2cpp-init.h = il2cpp\il2cpp-init.h
 		il2cpp\il2cpp-types-ptr.h = il2cpp\il2cpp-types-ptr.h

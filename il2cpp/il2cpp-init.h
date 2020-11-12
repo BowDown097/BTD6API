@@ -8,6 +8,9 @@
 // Application-specific types
 #include "il2cpp-types.h"
 
+// Extended types
+#include "il2cpp-extra.h"
+
 // These do not automatically update
 // IL2CPP API function pointers
 //#include "il2cpp-api-functions-ptr.h"

@@ -1,5 +1,5 @@
 # BTD6API
-An API allowing you to develop BTD6 mods that can be injected using [BTD6 Mod Manager](https://github.com/TDToolbox/BTD6-Mod-Manager/releases/latest).
+An API allowing you to develop BTD6 mods that can be injected using [BTD6 Mod Manager](https://github.com/TDToolbox/BTD6-Mod-Manager/releases/latest). There's also another, much more noob friendly API made in C# that you can check out called [NKHook6](https://github.com/TDToolbox/NKHook6/), made by the creators of the mod manager, if you wish to have an easier experience making mods.
 <p align="center">
     <a href="https://discord.gg/nuMvgkP" alt="Discord">
         <img src="https://img.shields.io/discord/504782676331331584" /></a>
